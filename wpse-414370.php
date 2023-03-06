@@ -2,7 +2,7 @@
 /**
 Plugin Name: WPSE 414370
 Description: See <a href="https://wordpress.stackexchange.com/q/414370/137402">https://wordpress.stackexchange.com/q/414370</a> for more details.
-Version: 20230306.1
+Version: 20230307.1
  */
 
 namespace WPSE_414370;
@@ -211,14 +211,29 @@ function posts_clauses( $clauses, $query ) {
 	if ( $query->get( '_found_posts' ) ) {
 		global $wpdb;
 
+		$groupby = $clauses['groupby'] ? "GROUP BY {$clauses['groupby']}" : '';
 		$orderby = $clauses['orderby'] ? "ORDER BY {$clauses['orderby']}" : '';
 
-		$found_posts_query = "
-			SELECT COUNT( $wpdb->posts.ID )
-			FROM $wpdb->posts {$clauses['join']}
-			WHERE 1=1 {$clauses['where']}
-			$orderby
-		";
+		if ( $groupby ) {
+			$query_without_limit = "
+				SELECT $wpdb->posts.ID
+				FROM $wpdb->posts {$clauses['join']}
+				WHERE 1=1 {$clauses['where']}
+				$groupby
+				$orderby
+			";
+
+			// Use a subquery.
+			$found_posts_query =
+				"SELECT COUNT(*) FROM ( $query_without_limit ) AS found_posts";
+		} else {
+			$found_posts_query = "
+				SELECT COUNT(*)
+				FROM $wpdb->posts {$clauses['join']}
+				WHERE 1=1 {$clauses['where']}
+				$orderby
+			";
+		}
 
 		$query->set( '_found_posts_query', $found_posts_query );
 	}
