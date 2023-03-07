@@ -122,6 +122,7 @@ function admin_menu_page() {
 				| <a href="#test-case-2">Test Case 2</a>
 				| <a href="#test-case-3">Test Case 3</a>
 				| <a href="#test-case-4">Test Case 4</a>
+				| <a href="#test-case-5">Test Case 5</a>
 				| <a href="#instructions">Instructions</a>
 			</p>
 
@@ -177,6 +178,40 @@ function admin_menu_page() {
 				using <code>SQL_CALC_FOUND_ROWS</code> and <code>FOUND_ROWS()</code>.</p>
 			<?php sample_test_case( $paged4, $cat, 'paged4', '#test-case-4', 'no_found_rows' ); ?>
 			<hr />
+
+			<h2 id="test-case-5">Test Case 5</h2>
+			<table class="widefat fixed">
+				<thead>
+					<tr>
+						<th scope="col">Query</th>
+						<th scope="col">Result</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					$queries = array(
+						"SELECT SQL_CALC_FOUND_ROWS * FROM $wpdb->posts LIMIT 0, 2",
+						'SELECT FOUND_ROWS()',
+						"SELECT COUNT(*) FROM $wpdb->posts",
+					);
+
+					foreach ( $queries as $i => $query ) {
+						if ( $i ) {
+							$result = $wpdb->get_var( $query );
+						} else {
+							$rows   = $wpdb->get_results( $query );
+							$result = count( $rows ) . ' rows';
+						}
+
+						printf(
+							'<tr><td><code>%s</code></td><td>%s</td></tr>',
+							esc_html( $query ),
+							esc_html( $result )
+						);
+					}
+					?>
+				</tbody>
+			</table>
 
 			<h2 id="instructions">End of tests</h2>
 			<p>Now, please capture a screenshot of this page (the entire page, including
